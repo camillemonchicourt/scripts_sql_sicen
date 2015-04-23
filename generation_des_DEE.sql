@@ -104,6 +104,7 @@ SELECT row_number() OVER (ORDER BY lpad(saisie_observation.id_obs::text, 7, '0':
    FROM saisie.saisie_observation
    JOIN inpn.taxref_v8 taxref USING (cd_nom)
    JOIN ign_bd_topo.commune ON st_intersects(commune.geometrie, saisie_observation.geometrie)
+   -- nécessite d'intégrer la couche des sites envoyée par Julien dans la table referentiels_divers.sites_cen_inpn_2014
    LEFT JOIN referentiels_divers.sites_cen_inpn_2014 ON st_intersects(sites_cen_inpn_2014.geometrie, saisie_observation.geometrie)
    LEFT JOIN md.lot_donnee ON saisie_observation.id_etude = lot_donnee.id_etude AND saisie_observation.id_protocole = lot_donnee.id_protocole AND ((
 CASE
