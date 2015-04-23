@@ -34,32 +34,31 @@ WITH (
 COMMENT ON TABLE md.lot_donnee
   IS 'Décrit les lots de données produits ou utilisé au CEN.';
   
-/* On l'alimente Comme ceci */
+/* On l'alimente comme ceci */
 
 INSERT INTO md.lot_donnee(
             libelle, id_etude, type_donnee, id_protocole)
-SELECT concat(nom_etude,' ; ', libelle,' -> ',
+SELECT DISTINCT concat(nom_etude,' ; ', libelle,' -> ',
 CASE
     WHEN st_geometrytype(geometrie) ILIKE '%point' THEN 'points'
     WHEN st_geometrytype(geometrie) ILIKE '%string' THEN 'lignes'
     WHEN st_geometrytype(geometrie) ILIKE '%polygon' THEN 'polygones'
-END, ' | ', CASE WHEN regne = 'Animalia' THEN 'faune' WHEN regne = 'Plantae' THEN 'flore' WHEN regne = 'Habitat' THEN 'habitats' END ) as libelle_lot, id_etude,
+END, ' | ', CASE WHEN regne = 'Animalia' OR regne = 'Plantae' OR regne = 'Fungi' THEN 'espece' WHEN regne = 'Habitat' THEN 'habitat' END ) as libelle_lot, id_etude,
 concat(
 CASE
     WHEN st_geometrytype(geometrie) ILIKE '%point' THEN 'point'
     WHEN st_geometrytype(geometrie) ILIKE '%string' THEN 'ligne'
     WHEN st_geometrytype(geometrie) ILIKE '%polygon' THEN 'perimetre'
-END, '_', CASE WHEN regne = 'Animalia'OR regne = 'Plantae' OR regne = 'Fungi' THEN 'espece' WHEN regne = 'Habitat' THEN 'habitat' END )::md.enum_type_donnee AS type_donnee
+END, '_', CASE WHEN regne = 'Animalia' OR regne = 'Plantae' OR regne = 'Fungi' THEN 'espece' WHEN regne = 'Habitat' THEN 'habitat' END )::md.enum_type_donnee AS type_donnee
 ,id_protocole
-  FROM saisie.saisie_observation
-  JOIN md.etude USING(id_etude)
-  JOIn md.protocole USING(id_protocole)
-  /* seulement les lots non déjà présents dans la table */
-  WHERE (id_etude, concat(
-CASE
-    WHEN st_geometrytype(geometrie) ILIKE '%point' THEN 'point'
-    WHEN st_geometrytype(geometrie) ILIKE '%string' THEN 'ligne'
-    WHEN st_geometrytype(geometrie) ILIKE '%polygon' THEN 'perimetre'
-END, '_', CASE WHEN regne = 'Animalia'OR regne = 'Plantae' OR regne = 'Fungi' THEN 'espece' WHEN regne = 'Habitat' THEN 'habitat' END )::md.enum_type_donnee , id_protocole) NOT IN (SELECT id_etude, type_donnee, id_protocole FROM md.lot_donnee)
+FROM saisie.saisie_observation
+JOIN md.etude USING(id_etude)
+JOIn md.protocole USING(id_protocole)
+ /* seulement les lots non déjà présents dans la table */
+WHERE (id_etude, concat(CASE
+                            WHEN st_geometrytype(geometrie) ILIKE '%point' THEN 'point'
+                            WHEN st_geometrytype(geometrie) ILIKE '%string' THEN 'ligne'
+                            WHEN st_geometrytype(geometrie) ILIKE '%polygon' THEN 'perimetre'
+                        END, '_', CASE WHEN regne = 'Animalia'OR regne = 'Plantae' OR regne = 'Fungi' THEN 'espece' WHEN regne = 'Habitat' THEN 'habitat' END )::md.enum_type_donnee , id_protocole) NOT IN (SELECT id_etude, type_donnee, id_protocole FROM md.lot_donnee)
 GROUP BY regne, st_geometrytype(geometrie), nom_etude, libelle, id_etude, id_protocole
-ORDER BY 1;
+ORDER BY 1	
