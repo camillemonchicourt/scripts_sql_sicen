@@ -1,4 +1,17 @@
-/* Création de la table md.lot_donnee */
+CREATE TYPE md.enum_type_donnee AS ENUM
+   ('indeterminé',
+    'perimetre_espece',
+    'ligne_espece',
+    'point_espece',
+    'point_faune',
+    'point_flore',
+    'point_habitat',
+    'ligne_faune',
+    'ligne_flore',
+    'ligne_habitat',
+    'perimetre_faune',
+    'perimetre_flore',
+    'perimetre_habitat');
 
 CREATE TABLE md.lot_donnee
 (
@@ -14,7 +27,7 @@ CREATE TABLE md.lot_donnee
   qualite_thematique text,
   id_protocole integer,
   code character varying,
-  responsable_code_personne character varying,
+  responsable_id_personne integer,
   CONSTRAINT pk_lot_donnee PRIMARY KEY (id_lot),
   CONSTRAINT fk_etude_id_protocole_reference_protocole FOREIGN KEY (id_protocole)
       REFERENCES md.protocole (id_protocole) MATCH SIMPLE
@@ -22,14 +35,15 @@ CREATE TABLE md.lot_donnee
   CONSTRAINT fk_etude_lot_donnee_reference_etude FOREIGN KEY (id_etude)
       REFERENCES md.etude (id_etude) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE NO ACTION,
-  CONSTRAINT fk_responsable_code_personne_references_personne_code_personne FOREIGN KEY (responsable_code_personne)
-      REFERENCES md.personne (code_personne) MATCH SIMPLE
+  CONSTRAINT fk_responsable_code_personne_references_personne_id_personne FOREIGN KEY (responsable_id_personne)
+      REFERENCES md.personne (id_personne) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE NO ACTION,
   CONSTRAINT "unique nom lot" UNIQUE (id_lot)
 )
 WITH (
   OIDS=FALSE
 );
+
 
 COMMENT ON TABLE md.lot_donnee
   IS 'Décrit les lots de données produits ou utilisé au CEN.';
