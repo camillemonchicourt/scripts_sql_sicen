@@ -93,14 +93,16 @@ SELECT row_number() OVER (ORDER BY lpad(saisie_observation.id_obs::text, 7, '0':
     COALESCE(saisie_observation.code_insee, commune.code_insee::text) AS codecommune, 
     commune.nom AS nomcommune, sites_cen_inpn_2014.id_mnhn::text AS codeen, 
     NULL::text AS typeen, NULL::text AS codemaille, 
-        CASE
+        /*CASE
             WHEN st_geometrytype(saisie_observation.geometrie) ~~* '%Point%'::text THEN st_x(saisie_observation.geometrie::geometry(Point,2154))
             ELSE st_x(st_centroid(saisie_observation.geometrie))
         END AS st_x, 
         CASE
             WHEN st_geometrytype(saisie_observation.geometrie) ~~* '%Point%'::text THEN st_y(saisie_observation.geometrie::geometry(Point,2154))
             ELSE st_y(st_centroid(saisie_observation.geometrie))
-        END AS st_y
+        END AS st_y*/
+        st_x(st_centroid(saisie_observation.geometrie)) AS st_x,
+        st_y(st_centroid(saisie_observation.geometrie)) AS st_y
    FROM saisie.saisie_observation
    JOIN inpn.taxref_v8 taxref USING (cd_nom)
    JOIN ign_bd_topo.commune ON st_intersects(commune.geometrie, saisie_observation.geometrie)
